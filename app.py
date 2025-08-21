@@ -41,8 +41,12 @@ def block_suspicious_ips():
             )
         return jsonify({"error": "Access Denied: Suspicious activity detected"}), 403
 
-# Rate limiter: 10 requests per minute by default
-limiter = Limiter(get_remote_address, app=app, default_limits=["10 per minute"])
+# Rate limiter: used token bucket /sliding window
+limiter = Limiter(
+    key_func=get_remote_address,
+    app=app,
+    strategy=MovingWindowRateLimiter,  
+)
 
 @app.before_request
 def start_timer():
