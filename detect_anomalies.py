@@ -11,11 +11,11 @@ OUTPUT_FILE = "anomalies.csv"
 try:
     df = pd.read_csv(LOG_FILE)
 except FileNotFoundError:
-    print("🚨 Log file not found. Run your Flask app to collect logs first.")
+    print(" Log file not found. Run your Flask app to collect logs first.")
     exit()
 
 if df.empty:
-    print("🚨 No traffic data found! Run your Flask app to collect logs first.")
+    print(" No traffic data found! Run your Flask app to collect logs first.")
     exit()
 
 # Convert timestamp column and (optional) filter last 24 hours
@@ -27,7 +27,7 @@ df = df.dropna(subset=["response_time"])
 
 # If not enough data, skip detection
 if len(df) < 10:
-    print("⚠️ Not enough data points to detect anomalies.")
+    print(" Not enough data points to detect anomalies.")
     exit()
 
 # Train Isolation Forest on response_time
@@ -41,12 +41,12 @@ df["is_anomaly"]   = model.predict(df[["response_time"]])  # -1 = anomaly, 1 = n
 # Extract anomalies (where is_anomaly == -1)
 anomalies = df[df["is_anomaly"] == -1]
 if not anomalies.empty:
-    print("🚨 Detected anomalies:")
+    print(" Detected anomalies:")
     print(anomalies[["timestamp", "ip", "method", "path", "anomaly_score"]])
     # Save only the unique IPs for blocking
     anomalies[["ip"]].drop_duplicates().to_csv(OUTPUT_FILE, index=False)
 else:
-    print("✅ No anomalies detected.")
+    print(" No anomalies detected.")
 
 # Save full log with scores for auditing
 df.to_csv("traffic_log_with_scores.csv", index=False)
